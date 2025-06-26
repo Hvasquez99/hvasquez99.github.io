@@ -1,0 +1,161 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mortgage Application | Solicitud de Hipoteca</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-image: url('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+      background-size: cover;
+      background-position: center;
+      /* Removed background-attachment: fixed to prevent jumping */
+    }
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.4); /* Darkened overlay */
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card {
+      background-color: rgba(255, 255, 255, 0.9); /* Slight transparency */
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+      width: 90%;
+      padding: 20px;
+    }
+    .btn-primary {
+      background-color: #1E3A8A; /* Dark blue */
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+    .btn-primary:hover {
+      background-color: #60A5FA; /* Lighter blue */
+    }
+    input:focus, textarea:focus {
+      border-color: #60A5FA;
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.5);
+    }
+    h1 {
+      color: #1E3A8A;
+    }
+    label {
+      color: #1E3A8A;
+    }
+  </style>
+  <script>
+    function toggleLanguage(lang) {
+      document.getElementById('english-content').style.display = lang === 'en' ? 'block' : 'none';
+      document.getElementById('spanish-content').style.display = lang === 'es' ? 'block' : 'none';
+    }
+    // Ensure initial display
+    window.onload = function() { toggleLanguage('en'); };
+  </script>
+</head>
+<body>
+  <div class="overlay">
+    <div class="card">
+      <div class="flex justify-center mb-6">
+        <button onclick="toggleLanguage('en')" class="px-4 py-2 mx-1 btn-primary rounded-lg">English</button>
+        <button onclick="toggleLanguage('es')" class="px-4 py-2 mx-1 btn-primary rounded-lg">Español</button>
+      </div>
+
+      <!-- English Content -->
+      <div id="english-content">
+        <h1 class="text-3xl font-bold text-center mb-4">Apply for Your Mortgage</h1>
+        <p class="text-center mb-6 text-gray-700">Submit your details below to get started.</p>
+        <form action="https://formspree.io/f/meokpyry" method="POST" class="space-y-4">
+          <div>
+            <label for="name_en" class="block text-sm font-medium">Full Name</label>
+            <input type="text" id="name_en" name="name" required class="mt-1 p-2 w-full border rounded-md">
+          </div>
+          <div>
+            <label for="email_en" class="block text-sm font-medium">Email Address</label>
+            <input type="email" id="email_en" name="email" required class="mt-1 p-2 w-full border rounded-md">
+          </div>
+          <div>
+            <label for="phone_en" class="block text-sm font-medium">Phone Number</label>
+            <input type="tel" id="phone_en" name="phone" required class="mt-1 p-2 w-full border rounded-md">
+          </div>
+          <div>
+            <label for="comments_en" class="block text-sm font-medium">Questions/Comments</label>
+            <textarea id="comments_en" name="comments" rows="4" class="mt-1 p-2 w-full border rounded-md"></textarea>
+          </div>
+          <input type="hidden" name="language" value="English">
+          <button type="submit" class="w-full btn-primary text-white p-2 rounded-md">Submit Application</button>
+        </form>
+        <p class="text-center text-sm text-gray-600 mt-4">Contact: Hvasquez@advancedlendingsolutions.com 832-265-0787</p>
+      </div>
+
+      <!-- Spanish Content -->
+      <div id="spanish-content" style="display: none;">
+        <h1 class="text-3xl font-bold text-center mb-4">¡Solicita tu Hipoteca!</h1>
+        <p class="text-center mb-6 text-gray-700">Envía tus datos a continuación para comenzar.</p>
+        <form action="https://formspree.io/f/meokpyry" method="POST" class="space-y-4">
+          <div>
+            <label for="name_es" class="block text-sm font-medium">Nombre Completo</label>
+            <input type="text" id="name_es" name="name" required class="mt-1 p-2 w-full border rounded-md">
+          </div>
+          <div>
+            <label for="email_es" class="block text-sm font-medium">Correo Electrónico</label>
+            <input type="email" id="email_es" name="email" required class="mt-1 p-2 w-full border rounded-md">
+          </div>
+          <div>
+            <label for="phone_es" class="block text-sm font-medium">Número de Teléfono</label>
+            <input type="tel" id="phone_es" name="phone" required class="mt-1 p-2 w-full border rounded-md">
+          </div>
+          <div>
+            <label for="comments_es" class="block text-sm font-medium">Preguntas/Comentarios</label>
+            <textarea id="comments_es" name="comments" rows="4" class="mt-1 p-2 w-full border rounded-md"></textarea>
+          </div>
+          <input type="hidden" name="language" value="Spanish">
+          <button type="submit" class="w-full btn-primary text-white p-2 rounded-md">Enviar Solicitud</button>
+        </form>
+        <p class="text-center text-sm text-gray-600 mt-4">Contacto: Hvasquez@advancedlendingsolutions.com 832-265-0787</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
